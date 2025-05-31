@@ -2,22 +2,17 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import { getDatabase, connectDatabaseEmulator } from 'firebase/database';
 import { getStorage, connectStorageEmulator } from 'firebase/storage';
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyBXhnT5AWMmJnQMDRFTlE5hdtKbjB4nxNw",
-  authDomain: "dkhil-32644.firebaseapp.com",
-  projectId: "dkhil-32644",
-  storageBucket: "dkhil-32644.firebasestorage.app",
-  messagingSenderId: "37336137805",
-  appId: "1:37336137805:web:b4a3eae4650a7e87405c04",
-  measurementId: "G-92BRXN0F8Z"
+  apiKey: "AIzaSyAwvH0kCjpr5H2Wlqwpva0PC0vjxeIM46o",
+  authDomain: "tekadev1.firebaseapp.com",
+  databaseURL: "https://tekadev1-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "tekadev1",
+  storageBucket: "tekadev1.appspot.com",
+  messagingSenderId: "1003700748004",
+  appId: "1:1003700748004:web:ff23010162612fbef7f6f1"
 };
-
 
 // Initialize Firebase with error handling
 let firebaseApp;
