@@ -88,7 +88,7 @@ const Contact = () => {
               </div>
               <h3 className="text-xl font-semibold mb-2">العنوان</h3>
               <p className="text-foreground/70">
-                123 شارع التصميم، المدينة الإبداعية،<br />
+                حي الانتصار , طرابلس،<br />
                 ليبيا
               </p>
             </div>
@@ -100,12 +100,12 @@ const Contact = () => {
               <h3 className="text-xl font-semibold mb-2">الهاتف</h3>
               <p className="text-foreground/70">
                 <a href="tel:+218123456789" className="hover:text-primary transition-colors">
-                  +218 123 456 789
+                  +218 092 2078595
                 </a>
               </p>
               <p className="text-foreground/70 mt-1">
                 <a href="tel:+218987654321" className="hover:text-primary transition-colors">
-                  +218 987 654 321
+                  +218 091 1396826
                 </a>
               </p>
             </div>
@@ -117,12 +117,12 @@ const Contact = () => {
               <h3 className="text-xl font-semibold mb-2">البريد الإلكتروني</h3>
               <p className="text-foreground/70">
                 <a href="mailto:info@elegance.com" className="hover:text-primary transition-colors">
-                  info@elegance.com
+                  info@dkhil.com
                 </a>
               </p>
               <p className="text-foreground/70 mt-1">
                 <a href="mailto:support@elegance.com" className="hover:text-primary transition-colors">
-                  support@elegance.com
+                  support@dkhil.com
                 </a>
               </p>
             </div>
