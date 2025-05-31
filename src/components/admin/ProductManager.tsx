@@ -87,7 +87,20 @@ const ProductManager: React.FC = () => {
     });
   };
 
- 
+  const loadCategories = async () => {
+    const db = getDatabase(firebaseApp);
+    const categoriesRef = ref(db, 'categories');
+    
+    onValue(categoriesRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const categoriesData = snapshot.val();
+        const categoriesList = Object.values(categoriesData).map((category: any) => category.name);
+        setCategories(categoriesList);
+      } else {
+        setCategories([]);
+      }
+    });
+  };
 
   const filterProducts = () => {
     let filtered = [...products];
