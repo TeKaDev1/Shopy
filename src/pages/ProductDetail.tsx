@@ -6,7 +6,7 @@ import ProductCard from '@/components/products/ProductCard';
 import OrderForm from '@/components/order/OrderForm';
 import DeliveryCostPreview from '@/components/products/DeliveryCostPreview';
 import { Product } from '@/data/products'; // Import only the type
-import { Minus, Plus, Heart, Share2, ChevronLeft, Star, CheckCircle, ShoppingBag, Loader2 } from 'lucide-react';
+import { Minus, Plus, Heart, Share2, ChevronLeft, Star, CheckCircle, ShoppingBag, Loader2, Facebook, Twitter, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { getDatabase, ref, increment, update, get, onValue } from 'firebase/database';
@@ -24,6 +24,7 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
   const [showOrderForm, setShowOrderForm] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
   
   // Fetch product data from Firebase
   useEffect(() => {
@@ -141,7 +142,7 @@ const ProductDetail = () => {
     if (product && quantity < (product.stock || 0)) {
       setQuantity(quantity + 1);
     } else {
-      toast.error(`Sorry, only ${product?.stock || 0} items available`);
+      toast.error(`عذراً، الكمية المتوفرة هي ${product?.stock || 0} قطعة فقط`);
     }
   };
   
@@ -149,6 +150,25 @@ const ProductDetail = () => {
     setShowOrderForm(true);
   };
 
+  const handleShare = (platform: string) => {
+    const url = window.location.href;
+    const text = `تحقق من ${product?.name} على موقعنا!`;
+    
+    switch (platform) {
+      case 'facebook':
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+        break;
+      case 'twitter':
+        window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank');
+        break;
+      case 'whatsapp':
+        window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
+        break;
+    }
+    
+    setShowShareMenu(false);
+  };
+  
   // Show loading state while fetching product
   if (loading) {
     return (
@@ -207,26 +227,65 @@ const ProductDetail = () => {
             {/* Product Images */}
             <div className="space-y-4">
               {/* Main Image */}
-              <div className="aspect-square overflow-hidden rounded-xl bg-secondary/50">
+              <div className="aspect-[4/3] overflow-hidden rounded-xl bg-secondary/50 relative group">
                 <img 
                   src={product.images[activeImage] || '/placeholder.svg'} 
                   alt={product.name}
-                  className="w-full h-full object-cover object-center transition-transform duration-300 hover:scale-105"
+                  className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
                   onError={(e) => {
-                    // Fallback if image fails to load
                     (e.target as HTMLImageElement).src = '/placeholder.svg';
                   }}
                 />
+                
+                {/* Share Button */}
+                <div className="absolute top-4 right-4">
+                  <button
+                    onClick={() => setShowShareMenu(!showShareMenu)}
+                    className="w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-primary hover:text-primary-foreground transition-colors"
+                    aria-label="مشاركة المنتج"
+                  >
+                    <Share2 className="w-5 h-5" />
+                  </button>
+                  
+                  {/* Share Menu */}
+                  {showShareMenu && (
+                    <div className="absolute top-16 right-4 bg-background/95 backdrop-blur-sm rounded-lg shadow-lg p-2 z-50 border border-border">
+                      <div className="flex flex-col gap-2">
+                        <button
+                          onClick={() => handleShare('facebook')}
+                          className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-secondary transition-colors"
+                        >
+                          <Facebook className="w-4 h-4 text-[#1877F2]" />
+                          <span>فيسبوك</span>
+                        </button>
+                        <button
+                          onClick={() => handleShare('twitter')}
+                          className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-secondary transition-colors"
+                        >
+                          <Twitter className="w-4 h-4 text-[#1DA1F2]" />
+                          <span>تويتر</span>
+                        </button>
+                        <button
+                          onClick={() => handleShare('whatsapp')}
+                          className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-secondary transition-colors"
+                        >
+                          <MessageCircle className="w-4 h-4 text-[#25D366]" />
+                          <span>واتساب</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
               
               {/* Thumbnails */}
               {product.images.length > 1 && (
-                <div className="flex gap-4 overflow-x-auto py-2">
+                <div className="flex gap-4 overflow-x-auto py-2 scrollbar-hide">
                   {product.images.map((image, index) => (
                     <button
                       key={index}
                       onClick={() => setActiveImage(index)}
-                      className={`w-20 h-20 rounded-md overflow-hidden flex-shrink-0 transition-all ${
+                      className={`w-24 h-24 rounded-md overflow-hidden flex-shrink-0 transition-all ${
                         activeImage === index
                           ? 'ring-2 ring-primary ring-offset-2'
                           : 'opacity-70 hover:opacity-100'
@@ -237,7 +296,6 @@ const ProductDetail = () => {
                         alt={`${product.name} - View ${index + 1}`}
                         className="w-full h-full object-cover object-center"
                         onError={(e) => {
-                          // Fallback if image fails to load
                           (e.target as HTMLImageElement).src = '/placeholder.svg';
                         }}
                       />
@@ -289,13 +347,13 @@ const ProductDetail = () => {
               
               {/* Price */}
               <div className="flex items-baseline gap-3 mb-6">
-                <span className="text-2xl font-semibold">${product.price.toFixed(2)}</span>
+                <span className="text-2xl font-semibold">{product.price.toFixed(2)} د.ل</span>
                 {product.originalPrice && (
-                  <span className="text-foreground/60 line-through">${product.originalPrice.toFixed(2)}</span>
+                  <span className="text-foreground/60 line-through">{product.originalPrice.toFixed(2)} د.ل</span>
                 )}
                 {product.discount && (
                   <span className="bg-primary/10 text-primary text-sm px-2 py-0.5 rounded-md font-medium">
-                    {product.discount}% OFF
+                    خصم {product.discount}%
                   </span>
                 )}
               </div>
@@ -323,7 +381,9 @@ const ProductDetail = () => {
                 <div className="flex items-center gap-2 mb-6">
                   <div className={`w-3 h-3 rounded-full ${product.stock > 0 ? 'bg-green-500' : 'bg-red-500'}`}></div>
                   <span className="text-sm font-medium">
-                    {product.stock > 0 ? `متوفر (${product.stock} في المخزون)` : 'غير متوفر'}
+                    {product.stock > 0 
+                      ? `متوفر (${product.stock} قطعة متبقية)` 
+                      : 'نفذت الكمية'}
                   </span>
                 </div>
               )}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, Phone, Mail, Send, MessageSquare, User, AtSign } from 'lucide-react';
+import { MapPin, Phone, Mail, Send, MessageSquare, User, AtSign, Map } from 'lucide-react';
 import { sendContactFormEmail } from '@/lib/emailjs';
 
 const Contact = () => {
@@ -16,6 +16,8 @@ const Contact = () => {
     success: boolean;
     message: string;
   } | null>(null);
+  
+  const [showMap, setShowMap] = useState(false);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -91,6 +93,27 @@ const Contact = () => {
                 حي الانتصار , طرابلس،<br />
                 ليبيا
               </p>
+              <button
+                onClick={() => setShowMap(!showMap)}
+                className="mt-3 text-sm text-primary hover:underline flex items-center justify-center gap-1 mx-auto"
+              >
+                <Map className="w-4 h-4" />
+                <span>{showMap ? 'إخفاء الخريطة' : 'عرض الخريطة'}</span>
+              </button>
+              
+              {showMap && (
+                <div className="mt-4 aspect-video rounded-lg overflow-hidden">
+                  <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3410.123456789012!2d13.12345678901234!3d32.12345678901234!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzLCsDA3JzI0LjQiTiAxM8KwMDcnMjQuNCJF!5e0!3m2!1sen!2sly!4v1234567890123"
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  ></iframe>
+                </div>
+              )}
             </div>
             
             <div className="bg-secondary/20 rounded-xl p-6 text-center hover:shadow-md transition-shadow">
@@ -201,7 +224,8 @@ const Contact = () => {
                         name="phone"
                         value={formData.phone}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 pr-10 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background text-foreground"
+                        dir="rtl"
+                        className="w-full px-3 py-2 pr-10 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background text-foreground text-right"
                         placeholder="أدخل رقم هاتفك"
                       />
                     </div>
@@ -245,6 +269,9 @@ const Contact = () => {
                     placeholder="اكتب رسالتك هنا..."
                     required
                   ></textarea>
+                  <p className="text-xs text-foreground/60 mt-1">
+                    يمكنك كتابة أي استفسارات أو اقتراحات أو شكاوى هنا
+                  </p>
                 </div>
                 
                 <button
@@ -273,11 +300,17 @@ const Contact = () => {
             {/* Map or Image */}
             <div className="relative">
               <div className="absolute -top-4 -right-4 w-full h-full bg-primary/10 rounded-xl transform -rotate-3"></div>
-              <img 
-                src="https://images.unsplash.com/photo-1577563908411-5077b6dc7624?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80" 
-                alt="اتصل بنا" 
-                className="relative z-10 rounded-xl shadow-lg w-full h-auto object-cover"
-              />
+              <div className="relative z-10 rounded-xl shadow-lg overflow-hidden aspect-[4/3]">
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3410.123456789012!2d13.12345678901234!3d32.12345678901234!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzLCsDA3JzI0LjQiTiAxM8KwMDcnMjQuNCJF!5e0!3m2!1sen!2sly!4v1234567890123"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                ></iframe>
+              </div>
             </div>
           </div>
         </div>

@@ -21,7 +21,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className, style }) 
       style={style}
     >
       {/* Product Image */}
-      <Link to={`/products/${product.id}`} className="block aspect-square overflow-hidden">
+      <Link to={`/products/${product.id}`} className="block aspect-[4/3] overflow-hidden">
         <img
           src={product.images[0]}
           alt={product.name}

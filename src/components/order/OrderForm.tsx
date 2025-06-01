@@ -30,12 +30,16 @@ const OrderForm: React.FC<OrderFormProps> = ({
   productPrice,
   productImage
 }) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    phoneNumber: '',
-    city: '',
-    address: '',
-    notes: ''
+  const [formData, setFormData] = useState(() => {
+    // Try to load saved data from localStorage
+    const savedData = localStorage.getItem('customerData');
+    return savedData ? JSON.parse(savedData) : {
+      name: '',
+      phoneNumber: '',
+      city: '',
+      address: '',
+      notes: ''
+    };
   });
   
   const [cities, setCities] = useState<{id: string; name: string; price: number}[]>([]);
@@ -123,6 +127,11 @@ const OrderForm: React.FC<OrderFormProps> = ({
     
     setDeliveryPrice(selectedCity ? selectedCity.price : 0);
   };
+  
+  // Save form data to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('customerData', JSON.stringify(formData));
+  }, [formData]);
   
   // Handle input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -216,14 +225,11 @@ const OrderForm: React.FC<OrderFormProps> = ({
       const db = getDatabase(firebaseApp);
       const ordersRef = ref(db, 'orders');
       
-      // Generate order ID starting from 100 and incrementing
-      
       // Get the latest order to determine the next ID
       const ordersSnapshot = await get(ordersRef);
       let nextOrderId = 100; // Start from 100 if no orders exist
       
       if (ordersSnapshot.exists()) {
-        // Find the highest order ID
         const orders = ordersSnapshot.val();
         const orderIds = Object.values(orders).map((order: any) => {
           const id = parseInt(order.id);
@@ -238,7 +244,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
       
       const generatedOrderId = nextOrderId.toString();
       
-      // Copy order ID to clipboard for easy access
+      // Copy order ID to clipboard
       try {
         await navigator.clipboard.writeText(generatedOrderId);
         toast.success('تم نسخ رقم الطلب إلى الحافظة', { duration: 3000 });
@@ -512,7 +518,8 @@ const OrderForm: React.FC<OrderFormProps> = ({
                   value={formData.phoneNumber}
                   onChange={handleInputChange}
                   placeholder="09xxxxxxxx"
-                  className="w-full px-4 py-2.5 rounded-md border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  dir="rtl"
+                  className="w-full px-4 py-2.5 rounded-md border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 text-right"
                   required
                 />
               </div>

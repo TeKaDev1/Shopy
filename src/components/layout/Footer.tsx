@@ -1,7 +1,7 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Twitter, ArrowRight, Send, Mail, Phone, MapPin } from 'lucide-react';
+import NewsletterForm from '@/components/newsletter/NewsletterForm';
 
 const Footer = () => {
   return (
@@ -124,52 +124,7 @@ const Footer = () => {
             <p className="text-sm mb-4">
               اشترك في نشرتنا الإخبارية لتلقي التحديثات حول المنتجات الجديدة والعروض الخاصة والترويجات.
             </p>
-            <form
-              className="flex"
-              onSubmit={(e) => {
-                e.preventDefault();
-                const form = e.currentTarget;
-                const email = new FormData(form).get('email') as string;
-                
-                // Import dynamically to avoid circular dependencies
-                import('@/lib/emailjs').then(({ sendNewsletterSubscription }) => {
-                  sendNewsletterSubscription({ email })
-                    .then(() => {
-                      // Clear the form
-                      form.reset();
-                      // Show success message using toast instead of alert
-                      import('sonner').then(({ toast }) => {
-                        toast.success('تم الاشتراك بنجاح في النشرة الإخبارية!', {
-                          description: `سيتم إرسال آخر التحديثات والعروض إلى ${email}`
-                        });
-                      });
-                    })
-                    .catch((error) => {
-                      console.error('Error subscribing to newsletter:', error);
-                      import('sonner').then(({ toast }) => {
-                        toast.error('حدث خطأ أثناء الاشتراك', {
-                          description: 'يرجى المحاولة مرة أخرى لاحقًا'
-                        });
-                      });
-                    });
-                });
-              }}
-            >
-              <input
-                type="email"
-                name="email"
-                placeholder="بريدك الإلكتروني"
-                className="flex-1 px-4 py-2 text-sm bg-background rounded-l-md border border-border focus:outline-none focus:ring-1 focus:ring-primary"
-                required
-              />
-              <button
-                type="submit"
-                className="bg-primary text-primary-foreground px-4 py-2 rounded-r-md hover:bg-primary/90 transition-colors"
-                aria-label="اشتراك"
-              >
-                <Send className="w-4 h-4" />
-              </button>
-            </form>
+            <NewsletterForm variant="compact" />
           </div>
         </div>
         

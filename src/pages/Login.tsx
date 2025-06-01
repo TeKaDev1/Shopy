@@ -4,7 +4,7 @@ import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { getDatabase, ref, get, query, orderByChild, equalTo } from 'firebase/database';
 import { firebaseApp } from '@/lib/firebase';
 import { toast } from 'sonner';
-import { Lock, User, Phone, ArrowRight, Package } from 'lucide-react';
+import { Lock, User, Phone, ArrowRight, Package, Copy, Check } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,6 +17,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [userOrders, setUserOrders] = useState<any[]>([]);
   const [showOrdersList, setShowOrdersList] = useState(false);
+  const [copiedOrderId, setCopiedOrderId] = useState<string | null>(null);
   
   // Redirect if user is already logged in (admin only)
   useEffect(() => {
@@ -243,6 +244,18 @@ const Login = () => {
         return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
     }
   };
+  
+  const handleCopyOrderId = async (orderId: string) => {
+    try {
+      await navigator.clipboard.writeText(orderId);
+      setCopiedOrderId(orderId);
+      toast.success('تم نسخ رقم الطلب');
+      setTimeout(() => setCopiedOrderId(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy order ID:', err);
+      toast.error('فشل نسخ رقم الطلب');
+    }
+  };
 
   return (
     <>
@@ -296,12 +309,25 @@ const Login = () => {
                         {userOrders.map((order) => (
                           <div
                             key={order.key}
-                            onClick={() => selectOrder(order.key)}
                             className="p-3 border border-border rounded-md hover:bg-secondary/80 cursor-pointer transition-colors"
                           >
                             <div className="flex justify-between items-start mb-2">
-                              <div>
+                              <div className="flex items-center gap-2">
                                 <span className="font-medium">#{order.id}</span>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCopyOrderId(order.id);
+                                  }}
+                                  className="p-1 hover:bg-secondary rounded-md transition-colors"
+                                  aria-label="نسخ رقم الطلب"
+                                >
+                                  {copiedOrderId === order.id ? (
+                                    <Check className="w-4 h-4 text-green-500" />
+                                  ) : (
+                                    <Copy className="w-4 h-4 text-foreground/60" />
+                                  )}
+                                </button>
                                 <span className={`mr-2 inline-block rounded-full px-2 py-0.5 text-xs font-medium ${getStatusColorClass(order.status)}`}>
                                   {getStatusText(order.status)}
                                 </span>
@@ -315,6 +341,14 @@ const Login = () => {
                               <span className="text-foreground/60">•</span>
                               <span className="font-medium">{order.total.toFixed(2)} د.ل</span>
                             </div>
+                            
+                            <button
+                              onClick={() => selectOrder(order.key)}
+                              className="w-full mt-3 text-sm text-primary hover:underline flex items-center justify-center gap-1"
+                            >
+                              <span>عرض التفاصيل</span>
+                              <ArrowRight className="w-4 h-4" />
+                            </button>
                           </div>
                         ))}
                       </div>
@@ -338,7 +372,8 @@ const Login = () => {
                             value={clientForm.phoneNumber}
                             onChange={handleClientInputChange}
                             placeholder="0911234567"
-                            className="w-full pl-10 pr-4 py-2.5 rounded-md border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
+                            dir="rtl"
+                            className="w-full pl-10 pr-4 py-2.5 rounded-md border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 text-right"
                             required
                           />
                         </div>

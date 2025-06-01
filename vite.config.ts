@@ -8,6 +8,24 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    strictPort: true,
+    hmr: {
+      overlay: true
+    }
+  },
+  build: {
+    target: 'esnext',
+    minify: 'terser',
+    sourcemap: mode === 'development',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui-vendor': ['@radix-ui/react-*'],
+          'firebase': ['firebase']
+        }
+      }
+    }
   },
   plugins: [
     react(),
@@ -19,4 +37,7 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom', 'firebase']
+  }
 }));

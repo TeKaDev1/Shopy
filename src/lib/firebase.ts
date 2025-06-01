@@ -11,7 +11,8 @@ const firebaseConfig = {
   storageBucket: "dkhil-32644.firebasestorage.app",
   messagingSenderId: "37336137805",
   appId: "1:37336137805:web:b4a3eae4650a7e87405c04",
-  measurementId: "G-92BRXN0F8Z"
+  measurementId: "G-92BRXN0F8Z",
+  databaseURL: "https://dkhil-32644-default-rtdb.firebaseio.com"
 };
 
 // Initialize Firebase with error handling

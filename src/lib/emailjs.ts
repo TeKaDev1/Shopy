@@ -61,7 +61,9 @@ export const sendOrderConfirmationEmail = async (orderData: OrderEmailData): Pro
       order_date: new Date().toLocaleDateString('ar-LY'),
       order_time: new Date().toLocaleTimeString('ar-LY'),
       customer_notes: orderData.notes || 'لا توجد ملاحظات',
-      items_count: orderData.items.reduce((sum, item) => sum + item.quantity, 0)
+      items_count: orderData.items.reduce((sum, item) => sum + item.quantity, 0),
+      email_subject: `طلب جديد #${orderData.id} - ${orderData.name}`,
+      email_preview: `طلب جديد من ${orderData.name} بقيمة ${orderData.total.toFixed(2)} د.ل`
     };
     
     // Send email using EmailJS
@@ -89,13 +91,16 @@ export const sendNewsletterSubscription = async (data: NewsletterSubscriptionDat
       subscriber_name: data.name || 'مشترك جديد',
       subscription_date: new Date().toLocaleDateString('ar-LY'),
       subscription_time: new Date().toLocaleTimeString('ar-LY'),
-      to_email: 'itzhapy@gmail.com' // Ensure the email is sent to your address
+      to_email: 'itzhapy@gmail.com',
+      email_subject: 'اشتراك جديد في النشرة الإخبارية',
+      email_preview: `اشتراك جديد من ${data.email}`,
+      welcome_message: `مرحباً ${data.name || 'عزيزي المشترك'}،\n\nنشكرك على اشتراكك في نشرتنا الإخبارية! ستصلك آخر التحديثات والعروض الخاصة مباشرة إلى بريدك الإلكتروني.\n\nمع تحيات،\nفريق دخيل`
     };
     
     // Send email using EmailJS
     await emailjs.send(
       'itzhapy@gmail.com', // Service ID
-      'template_newsletter', // Template ID - you'll need to create this template in EmailJS
+      'template_newsletter', // Template ID
       templateParams
     );
     
@@ -125,13 +130,16 @@ export const sendContactFormEmail = async (data: {
       subject: data.subject,
       message: data.message,
       submission_date: new Date().toLocaleDateString('ar-LY'),
-      submission_time: new Date().toLocaleTimeString('ar-LY')
+      submission_time: new Date().toLocaleTimeString('ar-LY'),
+      email_subject: `رسالة جديدة: ${data.subject}`,
+      email_preview: `رسالة جديدة من ${data.name} بخصوص ${data.subject}`,
+      response_message: `مرحباً ${data.name}،\n\nشكراً لتواصلك معنا. لقد استلمنا رسالتك وسيقوم فريقنا بالرد عليك في أقرب وقت ممكن.\n\nتفاصيل رسالتك:\nالموضوع: ${data.subject}\nالرسالة: ${data.message}\n\nمع تحيات،\nفريق دخيل`
     };
     
     // Send email using EmailJS
     await emailjs.send(
       'itzhapy@gmail.com', // Service ID
-      'template_contact', // Template ID - you'll need to create this template in EmailJS
+      'template_contact', // Template ID
       templateParams
     );
     
