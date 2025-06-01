@@ -106,7 +106,7 @@ const Footer = () => {
               <li className="flex items-center">
                 <Phone className="w-5 h-5 mr-3 text-primary shrink-0" />
                 <a href="tel:+218123456789" className="text-sm hover:text-primary transition-colors">
-                  +218 092 207 8595
+                  <span dir="ltr" style={{ unicodeBidi: 'bidi-override', direction: 'ltr' }}>+218 092 207 8595</span>
                 </a>
               </li>
               <li className="flex items-center">

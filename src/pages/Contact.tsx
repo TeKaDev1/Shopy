@@ -123,12 +123,12 @@ const Contact = () => {
               <h3 className="text-xl font-semibold mb-2">الهاتف</h3>
               <p className="text-foreground/70">
                 <a href="tel:+218123456789" className="hover:text-primary transition-colors">
-                  +218 092 2078595
+                  <span dir="ltr" style={{ unicodeBidi: 'bidi-override', direction: 'ltr' }}>+218 092 2078595</span>
                 </a>
               </p>
               <p className="text-foreground/70 mt-1">
                 <a href="tel:+218987654321" className="hover:text-primary transition-colors">
-                  +218 091 1396826
+                  <span dir="ltr" style={{ unicodeBidi: 'bidi-override', direction: 'ltr' }}>+218 091 1396826</span>
                 </a>
               </p>
             </div>
