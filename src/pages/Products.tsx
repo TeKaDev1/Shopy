@@ -6,6 +6,7 @@ import { Filter, ChevronDown, Grid, List, Search, Loader2 } from 'lucide-react';
 import { getDatabase, ref, onValue } from 'firebase/database';
 import { firebaseApp } from '@/lib/firebase';
 import { Product } from '@/data/products'; // Import only the type
+import { toast } from 'sonner';
 
 const Products = () => {
   const [selectedCategory, setSelectedCategory] = useState('الكل');
@@ -52,6 +53,12 @@ const Products = () => {
       }
       
       setLoading(false);
+    }, (error) => {
+      console.error("Firebase onValue error fetching products:", error);
+      toast.error("حدث خطأ أثناء تحميل المنتجات.");
+      setProducts([]); // Clear products on error
+      setCategories(['الكل']); // Reset categories
+      setLoading(false); // Ensure loading is set to false even on error
     });
     
     return () => unsubscribe();
