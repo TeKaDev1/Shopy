@@ -286,7 +286,20 @@ const OrderForm: React.FC<OrderFormProps> = ({
         date: new Date().toISOString()
       };
       
-      console.log("Attempting to save orderData to Firebase:", JSON.stringify(orderData, null, 2)); // Log the exact data
+      console.log("Order data validation:", {
+        hasId: !!orderData.id,
+        hasName: !!orderData.name,
+        hasPhoneNumber: !!orderData.phoneNumber,
+        hasCity: !!orderData.city,
+        hasAddress: !!orderData.address,
+        hasItems: !!orderData.items && orderData.items.length > 0,
+        hasTotal: !!orderData.total,
+        hasStatus: !!orderData.status,
+        hasDate: !!orderData.date
+      });
+      
+      console.log("Attempting to save orderData to Firebase:", JSON.stringify(orderData, null, 2));
+      
       // Save order to Firebase
       const newOrderRef = await push(ordersRef, orderData);
       console.log("Order pushed to Firebase successfully, ref key:", newOrderRef.key);
@@ -303,63 +316,43 @@ const OrderForm: React.FC<OrderFormProps> = ({
         </div>
       `).join('');
 
-      // Send confirmation email with more detailed data
-      await sendOrderConfirmationEmail({
-        shop_name: "متجر أناقة", // Replace with your actual shop name or pass dynamically
-        shop_url: window.location.origin,
-        support_email: "support@dkhil.com", // Replace with your support email
-        current_year: new Date().getFullYear().toString(),
-        order_id: generatedOrderId,
-        // customer_email: formData.email, // Removed customer email
-        customer_name: formData.name,
-        phone_number: formData.phoneNumber,
-        delivery_address: `${formData.city}, ${formData.address}`,
-        items_html: itemsHtml,
-        subtotal_amount: subtotal.toFixed(2),
-        delivery_fee: deliveryPrice.toFixed(2),
-        order_total: total.toFixed(2),
-        currency: "LYD",
-        dashboard_link: `${window.location.origin}/client-dashboard/${newOrderRef.key}` // Use the actual Firebase key for the link
-      });
-      
-      // Set order ID for success message
-      setOrderId(generatedOrderId);
-      setOrderSuccess(true);
-      
-      // Show success message
-      toast.success('تم إرسال طلبك بنجاح');
+      try {
+        // Send confirmation email with more detailed data
+        await sendOrderConfirmationEmail({
+          shop_name: "متجر أناقة",
+          shop_url: window.location.origin,
+          support_email: "support@dkhil.com",
+          current_year: new Date().getFullYear().toString(),
+          order_id: generatedOrderId,
+          customer_name: formData.name,
+          phone_number: formData.phoneNumber,
+          delivery_address: `${formData.city}, ${formData.address}`,
+          items_html: itemsHtml,
+          subtotal_amount: subtotal.toFixed(2),
+          delivery_fee: deliveryPrice.toFixed(2),
+          order_total: total.toFixed(2),
+          currency: "LYD",
+          dashboard_link: `${window.location.origin}/client-dashboard/${newOrderRef.key}`
+        });
+        
+        // Set order ID for success message
+        setOrderId(generatedOrderId);
+        setOrderSuccess(true);
+        
+        // Show success message
+        toast.success('تم إرسال طلبك بنجاح');
+      } catch (emailError) {
+        console.error('خطأ في إرسال البريد الإلكتروني:', emailError);
+        // Continue with success flow even if email fails
+        setOrderId(generatedOrderId);
+        setOrderSuccess(true);
+        toast.success('تم إرسال طلبك بنجاح');
+      }
     } catch (error) {
       console.error('خطأ في إرسال الطلب:', error);
       toast.error('حدث خطأ أثناء إرسال الطلب');
+    } finally {
       setLoading(false);
-    }
-  };
-  
-  const sendConfirmationEmail = async (orderData: any) => {
-    try {
-      const templateParams = {
-        to_email: orderData.email,
-        to_name: orderData.name,
-        order_id: orderData.id,
-        order_date: new Date().toLocaleDateString('ar-LY'),
-        order_items: orderData.items.map((item: any) => 
-          `${item.name} - ${item.quantity} × ${item.price.toFixed(2)} د.ل`
-        ).join('\n'),
-        order_total: orderData.total.toFixed(2),
-        order_status: 'قيد الانتظار',
-        delivery_address: `${orderData.city}، ${orderData.address}`,
-        customer_phone: orderData.phoneNumber,
-        customer_service_phone: '0922078595'
-      };
-
-      await emailjs.send(
-        'service_orn_1i7o',
-        'template_orn_1i7o',
-        templateParams,
-        'orn_1i7o'
-      );
-    } catch (error) {
-      console.error('Error sending confirmation email:', error);
     }
   };
   
