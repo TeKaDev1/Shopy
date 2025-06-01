@@ -347,9 +347,9 @@ const ProductDetail = () => {
               
               {/* Price */}
               <div className="flex items-baseline gap-3 mb-6">
-                <span className="text-2xl font-semibold">{product.price.toFixed(2)} د.ل</span>
+                <span className="text-2xl font-semibold">LYD {product.price.toFixed(2)}</span>
                 {product.originalPrice && (
-                  <span className="text-foreground/60 line-through">{product.originalPrice.toFixed(2)} د.ل</span>
+                  <span className="text-foreground/60 line-through">LYD {product.originalPrice.toFixed(2)}</span>
                 )}
                 {product.discount && (
                   <span className="bg-primary/10 text-primary text-sm px-2 py-0.5 rounded-md font-medium">

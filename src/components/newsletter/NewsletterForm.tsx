@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Send, Loader2, Check } from 'lucide-react';
 import { toast } from 'sonner';
-import { sendNewsletterSubscription } from '@/lib/emailjs';
+// import { sendNewsletterSubscription } from '@/lib/emailjs'; // We'll handle subscription directly with Firebase
+import { getDatabase, ref, push, serverTimestamp, query, orderByChild, equalTo, get } from 'firebase/database';
+import { firebaseApp } from '@/lib/firebase';
 
 interface NewsletterFormProps {
   className?: string;
@@ -27,10 +29,35 @@ const NewsletterForm: React.FC<NewsletterFormProps> = ({
     setIsSuccess(false);
 
     try {
-      await sendNewsletterSubscription({
+      const db = getDatabase(firebaseApp);
+      const subscribersRef = ref(db, 'newsletterSubscribers');
+
+      // Check if email already exists
+      const emailQuery = query(subscribersRef, orderByChild('email'), equalTo(formData.email));
+      const snapshot = await get(emailQuery);
+
+      if (snapshot.exists()) {
+        toast.info('أنت مشترك بالفعل!', {
+          description: 'هذا البريد الإلكتروني مسجل بالفعل في قائمتنا البريدية.'
+        });
+        setIsSuccess(true); // Consider it a success if already subscribed
+        setFormData({ email: '', name: '' });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // If not subscribed, add to Firebase
+      await push(subscribersRef, {
         email: formData.email,
-        name: formData.name || undefined
+        name: formData.name || '',
+        subscribedAt: serverTimestamp()
       });
+      
+      // Optionally, you can still call sendNewsletterSubscription if it serves another purpose (e.g., welcome email via EmailJS)
+      // await sendNewsletterSubscription({
+      //   email: formData.email,
+      //   name: formData.name || undefined
+      // });
 
       // Show success state
       setIsSuccess(true);

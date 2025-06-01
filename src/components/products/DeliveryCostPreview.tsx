@@ -117,13 +117,13 @@ const DeliveryCostPreview: React.FC<DeliveryCostPreviewProps> = ({ productPrice 
           
           <div className="grid grid-cols-2 gap-2 text-sm">
             <div className="text-foreground/60">سعر المنتج:</div>
-            <div className="text-right font-medium">{productPrice.toFixed(2)} د.ل</div>
+            <div className="text-right font-medium">LYD {productPrice.toFixed(2)}</div>
             
             <div className="text-foreground/60">تكلفة التوصيل:</div>
-            <div className="text-right font-medium">{deliveryCost?.toFixed(2)} د.ل</div>
+            <div className="text-right font-medium">LYD {deliveryCost?.toFixed(2)}</div>
             
             <div className="text-foreground/60 font-medium pt-2 border-t border-border">الإجمالي:</div>
-            <div className="text-right font-semibold pt-2 border-t border-border">{totalCost.toFixed(2)} د.ل</div>
+            <div className="text-right font-semibold pt-2 border-t border-border">LYD {totalCost.toFixed(2)}</div>
           </div>
         </>
       )}

@@ -243,7 +243,7 @@ const OrderManager: React.FC<OrderManagerProps> = ({ orders, onRefresh }) => {
                 
                 <div className="flex items-center justify-between md:justify-end gap-4">
                   <div className="text-right">
-                    <p className="font-medium">{order.total.toFixed(2)} د.ل</p>
+                    <p className="font-medium">LYD {order.total.toFixed(2)}</p>
                     <p className="text-xs text-foreground/60">{formatDate(order.date)}</p>
                   </div>
                   
@@ -278,10 +278,10 @@ const OrderManager: React.FC<OrderManagerProps> = ({ orders, onRefresh }) => {
                               <h5 className="text-sm font-medium">{item.name}</h5>
                               <div className="flex justify-between items-center mt-1">
                                 <span className="text-xs text-foreground/60">
-                                  {item.quantity} × {item.price.toFixed(2)} د.ل
+                                  {item.quantity} × LYD {item.price.toFixed(2)}
                                 </span>
                                 <span className="text-sm font-medium">
-                                  {(item.price * item.quantity).toFixed(2)} د.ل
+                                  LYD {(item.price * item.quantity).toFixed(2)}
                                 </span>
                               </div>
                             </div>

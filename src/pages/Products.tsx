@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import ProductCard from '@/components/products/ProductCard';
+import ProductCardSkeleton from '@/components/ui/ProductCardSkeleton';
 import { Filter, ChevronDown, Grid, List, Search, Loader2 } from 'lucide-react';
 import { getDatabase, ref, onValue } from 'firebase/database';
 import { firebaseApp } from '@/lib/firebase';
@@ -215,12 +216,13 @@ const Products = () => {
           
           {/* Products Grid */}
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-20">
-              <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
-              <p className="text-foreground/60">جاري تحميل المنتجات...</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-12">
+              {Array.from({ length: 8 }).map((_, index) => (
+                <ProductCardSkeleton key={index} />
+              ))}
             </div>
           ) : filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-12">
               {filteredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}

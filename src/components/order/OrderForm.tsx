@@ -394,7 +394,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
                                 {product.category}
                               </span>
                               <span className="text-sm font-medium">
-                                {product.price.toFixed(2)} د.ل
+                                LYD {product.price.toFixed(2)}
                               </span>
                             </div>
                           </div>
@@ -451,7 +451,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
                           </div>
                           <div className="flex items-center gap-3">
                             <span className="text-sm font-medium">
-                              {(item.price * item.quantity).toFixed(2)} د.ل
+                              LYD {(item.price * item.quantity).toFixed(2)}
                             </span>
                             <button
                               type="button"
@@ -477,15 +477,15 @@ const OrderForm: React.FC<OrderFormProps> = ({
               <div className="border-t border-border pt-4 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>المجموع الفرعي</span>
-                  <span>{subtotal.toFixed(2)} د.ل</span>
+                  <span>LYD {subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>رسوم التوصيل</span>
-                  <span>{deliveryPrice.toFixed(2)} د.ل</span>
+                  <span>LYD {deliveryPrice.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between font-medium pt-2 border-t border-border">
                   <span>المجموع</span>
-                  <span>{total.toFixed(2)} د.ل</span>
+                  <span>LYD {total.toFixed(2)}</span>
                 </div>
               </div>
             </div>

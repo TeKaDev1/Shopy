@@ -9,6 +9,7 @@ import OrderManager from '@/components/admin/OrderManager';
 import CityDeliveryManager from '@/components/admin/CityDeliveryManager';
 import CategoryManager from '@/components/admin/CategoryManager';
 import ProductManager from '@/components/admin/ProductManager';
+import NewsletterManager from '@/components/admin/NewsletterManager';
 
 // Order status types
 type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
@@ -61,7 +62,7 @@ interface Product {
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'categories' | 'cities'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'categories' | 'cities' | 'newsletter'>('orders');
   const [orders, setOrders] = useState<Order[]>([]);
   const [cities, setCities] = useState<CityDelivery[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -368,6 +369,16 @@ const AdminDashboard = () => {
               >
                 المدن وأسعار التوصيل
               </button>
+              <button
+                onClick={() => setActiveTab('newsletter')}
+                className={`px-6 py-3 font-medium text-sm whitespace-nowrap ${
+                  activeTab === 'newsletter'
+                    ? 'border-b-2 border-primary text-primary'
+                    : 'text-foreground/60 hover:text-foreground'
+                }`}
+              >
+                النشرة الإخبارية
+              </button>
             </div>
           </div>
           
@@ -478,6 +489,16 @@ const AdminDashboard = () => {
                 </div>
                 
                 <CityDeliveryManager />
+              </div>
+            )}
+
+            {/* Newsletter Tab */}
+            {activeTab === 'newsletter' && (
+              <div>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-semibold">إدارة النشرة الإخبارية</h2>
+                </div>
+                <NewsletterManager />
               </div>
             )}
           </div>

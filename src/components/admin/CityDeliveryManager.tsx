@@ -290,7 +290,7 @@ const CityDeliveryManager: React.FC = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1.5">سعر التوصيل (د.ل)</label>
+            <label className="block text-sm font-medium mb-1.5">سعر التوصيل (LYD)</label>
             <input
               type="number"
               value={newCity.price}
@@ -435,7 +435,7 @@ const CityDeliveryManager: React.FC = () => {
                       ) : (
                         <>
                           <td className="px-4 py-3 font-medium">{city.name}</td>
-                          <td className="px-4 py-3">{city.price} د.ل</td>
+                          <td className="px-4 py-3">LYD {city.price}</td>
                           <td className="px-4 py-3">{city.region}</td>
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-2">
