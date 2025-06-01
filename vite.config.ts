@@ -21,8 +21,8 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': ['@radix-ui/react-*'],
-          'firebase': ['firebase']
+          'ui-vendor': ['@radix-ui/react-*']
+          // 'firebase': ['firebase'] // Removed to let Vite handle Firebase chunking
         }
       }
     }
