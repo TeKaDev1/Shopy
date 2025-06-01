@@ -1,128 +1,52 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ProductCard from '@/components/products/ProductCard';
-import { Product } from '@/data/products'; // Import also import fallback data
-import products from '@/data/products'; // Import fallback data
-import { ArrowRight, Loader2, RefreshCcw, AlertCircle } from 'lucide-react';
-import { getDatabase, ref, onValue, DatabaseReference, get } from 'firebase/database';
-import { database } from '@/lib/firebase';
+import { Product } from '@/data/products'; // Import only the type
+import { ArrowRight, Loader2 } from 'lucide-react';
+import { getDatabase, ref, onValue } from 'firebase/database';
+import { firebaseApp } from '@/lib/firebase';
 
 const FeaturedProducts = () => {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [retryCount, setRetryCount] = useState(0);
 
-  // Fetch products function with error handling
-  const fetchProducts = useCallback(() => {
-    setLoading(true);
-    setError(null);
+  // Fetch products from Firebase
+  useEffect(() => {
+    const db = getDatabase(firebaseApp);
+    const productsRef = ref(db, 'products');
     
-    try {
-      if (!database) {
-        throw new Error("Firebase database is not initialized");
-      }
-      
-      const productsRef = ref(database, 'products');
-      
-      // First try to get data once
-      get(productsRef).then((snapshot) => {
-        if (snapshot.exists()) {
-          processProductData(snapshot.val());
-        } else {
-          // If no data, fall back to static data
-          const filteredProducts = products.filter(p => p.featured);
-          setFeaturedProducts(filteredProducts);
-          setLoading(false);
-        }
-      }).catch((error) => {
-        console.error("Error fetching products:", error);
-        setError("Failed to load products. Please try again.");
+    const unsubscribe = onValue(productsRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const productsData = snapshot.val();
+        const productsList: Product[] = [];
         
-        // Fall back to static data
-        const filteredProducts = products.filter(p => p.featured);
-        setFeaturedProducts(filteredProducts);
-        setLoading(false);
-      });
-      
-      // Then set up real-time listener
-      const unsubscribe = onValue(productsRef,
-        (snapshot) => {
-          if (snapshot.exists()) {
-            processProductData(snapshot.val());
-          } else {
-            // If real-time data is empty but we already have fallback data, keep it
-            if (featuredProducts.length === 0) {
-              const filteredProducts = products.filter(p => p.featured);
-              setFeaturedProducts(filteredProducts);
-            }
-            setLoading(false);
-          }
-        },
-        (error) => {
-          console.error("Real-time database error:", error);
-          setError("Connection to database lost. Using cached data.");
+        Object.keys(productsData).forEach((key) => {
+          const product = productsData[key];
           
-          // Only fall back if we don't already have products
-          if (featuredProducts.length === 0) {
-            const filteredProducts = products.filter(p => p.featured);
-            setFeaturedProducts(filteredProducts);
+          // Ensure images is always an array
+          if (!product.images) {
+            product.images = [];
           }
-          setLoading(false);
-        }
-      );
-      
-      return unsubscribe;
-    } catch (error) {
-      console.error("Fatal error in Firebase setup:", error);
-      setError("Could not connect to the database. Using offline data.");
-      
-      // Fall back to static data
-      const filteredProducts = products.filter(p => p.featured);
-      setFeaturedProducts(filteredProducts);
-      setLoading(false);
-      
-      // Return empty function as unsubscribe
-      return () => {};
-    }
-  }, [retryCount]);
-  
-  // Process product data helper function
-  const processProductData = (productsData: any) => {
-    const productsList: Product[] = [];
-    
-    Object.keys(productsData).forEach((key) => {
-      const product = productsData[key];
-      
-      // Ensure images is always an array
-      if (!product.images) {
-        product.images = [];
-      }
-      
-      // Only include featured products
-      if (product.featured) {
-        productsList.push({
-          ...product,
-          id: key
+          
+          // Only include featured products
+          if (product.featured) {
+            productsList.push({
+              ...product,
+              id: key
+            });
+          }
         });
+        
+        setFeaturedProducts(productsList);
+      } else {
+        setFeaturedProducts([]);
       }
+      
+      setLoading(false);
     });
     
-    setFeaturedProducts(productsList);
-    setLoading(false);
-    setError(null);
-  };
-
-  // Set up products fetch
-  useEffect(() => {
-    const unsubscribe = fetchProducts();
     return () => unsubscribe();
-  }, [fetchProducts]);
-  
-  // Function to retry loading
-  const handleRetry = () => {
-    setRetryCount(prev => prev + 1);
-  };
+  }, []);
 
   return (
     <section className="py-24 px-6">
