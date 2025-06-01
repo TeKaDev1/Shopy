@@ -62,7 +62,7 @@ export const sendOrderConfirmationEmail = async (orderData: OrderEmailData): Pro
     // Send email using the correct service ID and template ID
     const response = await emailjs.send(
       'itzhapy@gmail.com',
-      'template_f5rh7n9',
+      'template_se2cken',
       templateParams,
       'B6EzNeSIjQOTyWOLO'
     );
