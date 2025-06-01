@@ -87,7 +87,7 @@ export const sendOrderConfirmationEmail = async (orderData: OrderEmailData): Pro
     // Send email to ADMIN using the admin alert template ID
     await emailjs.send(
       'itzhapy@gmail.com',    // Your EmailJS Service ID
-      'template_f5rh7n9',   // Admin Order Alert Template ID (reverted from template_se2cken)
+      'template_se2cken',   // Admin Order Alert Template ID (reverted from template_se2cken)
       templateParams        // Parameters for the admin email
     );
     
