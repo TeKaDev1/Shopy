@@ -119,7 +119,7 @@ const AdminDashboard = () => {
         setOrders(ordersList);
         
         // Calculate stats
-        const stats = {
+        const statsData = {
           totalOrders: ordersList.length,
           pendingOrders: ordersList.filter(order => order.status === 'pending').length,
           processingOrders: ordersList.filter(order => order.status === 'processing').length,
@@ -129,9 +129,33 @@ const AdminDashboard = () => {
           totalRevenue: ordersList.reduce((total, order) => total + order.total, 0)
         };
         
-        setStats(stats);
+        setStats(statsData);
+      } else {
+        setOrders([]);
+        setStats({ // Reset stats if no orders
+          totalOrders: 0,
+          pendingOrders: 0,
+          processingOrders: 0,
+          shippedOrders: 0,
+          deliveredOrders: 0,
+          cancelledOrders: 0,
+          totalRevenue: 0
+        });
       }
-      
+      setLoading(false);
+    }, (error) => {
+      console.error("Firebase onValue error fetching orders for admin:", error);
+      toast.error("حدث خطأ أثناء تحميل الطلبات.");
+      setOrders([]);
+      setStats({
+        totalOrders: 0,
+        pendingOrders: 0,
+        processingOrders: 0,
+        shippedOrders: 0,
+        deliveredOrders: 0,
+        cancelledOrders: 0,
+        totalRevenue: 0
+      });
       setLoading(false);
     });
     
@@ -153,7 +177,13 @@ const AdminDashboard = () => {
         citiesList.sort((a, b) => a.name.localeCompare(b.name));
         
         setCities(citiesList);
+      } else {
+        setCities([]);
       }
+    }, (error) => {
+      console.error("Firebase onValue error fetching cities for admin:", error);
+      toast.error("حدث خطأ أثناء تحميل بيانات المدن.");
+      setCities([]);
     });
     
     // Load products
@@ -181,7 +211,13 @@ const AdminDashboard = () => {
         productsList.sort((a, b) => a.name.localeCompare(b.name));
         
         setProducts(productsList);
+      } else {
+        setProducts([]);
       }
+    }, (error) => {
+      console.error("Firebase onValue error fetching products for admin dashboard:", error);
+      // No toast here as ProductManager handles its own loading/error display
+      setProducts([]);
     });
   };
   

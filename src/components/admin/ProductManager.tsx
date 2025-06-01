@@ -76,14 +76,25 @@ const ProductManager: React.FC = () => {
             
             setProducts(productsWithStats);
           } else {
+            // If no stats, use productsList as is
             setProducts(productsList);
           }
+          setLoading(false);
+        }, (statsError) => {
+          console.error("Firebase onValue error fetching product stats:", statsError);
+          toast.error("حدث خطأ أثناء تحميل إحصائيات المنتجات.");
+          setProducts(productsList); // Use productsList even if stats fail
           setLoading(false);
         });
       } else {
         setProducts([]);
         setLoading(false);
       }
+    }, (error) => {
+      console.error("Firebase onValue error fetching products for admin:", error);
+      toast.error("حدث خطأ أثناء تحميل قائمة المنتجات.");
+      setProducts([]);
+      setLoading(false);
     });
   };
 
@@ -99,6 +110,10 @@ const ProductManager: React.FC = () => {
       } else {
         setCategories([]);
       }
+    }, (error) => {
+      console.error("Firebase onValue error fetching categories for admin:", error);
+      toast.error("حدث خطأ أثناء تحميل الفئات.");
+      setCategories([]);
     });
   };
 

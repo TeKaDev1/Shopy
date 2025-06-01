@@ -237,7 +237,7 @@ const OrderManager: React.FC<OrderManagerProps> = ({ orders, onRefresh }) => {
                         {getStatusText(order.status)}
                       </span>
                     </div>
-                    <p className="text-sm text-foreground/60">{order.name} - {order.phoneNumber}</p>
+                    <p className="text-sm text-foreground/60">{order.name} - <span dir="ltr" style={{ unicodeBidi: 'bidi-override', direction: 'ltr' }}>{order.phoneNumber}</span></p>
                   </div>
                 </div>
                 
@@ -300,7 +300,7 @@ const OrderManager: React.FC<OrderManagerProps> = ({ orders, onRefresh }) => {
                         </div>
                         <div>
                           <p className="text-sm text-foreground/60">رقم الهاتف</p>
-                          <p className="font-medium">{order.phoneNumber}</p>
+                          <p className="font-medium"><span dir="ltr" style={{ unicodeBidi: 'bidi-override', direction: 'ltr' }}>{order.phoneNumber}</span></p>
                         </div>
                         <div>
                           <p className="text-sm text-foreground/60">المدينة</p>
