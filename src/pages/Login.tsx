@@ -341,7 +341,7 @@ const Login = () => {
                               <Package className="w-4 h-4 text-primary" />
                               <span>{order.items.length} منتج</span>
                               <span className="text-foreground/60">•</span>
-                              <span className="font-medium">{order.total.toFixed(2)} د.ل</span>
+                              <span className="font-medium">LYD {order.total.toFixed(2)}</span>
                             </div>
                             
                             <button
