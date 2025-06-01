@@ -19,10 +19,14 @@ export default defineConfig(({ mode }) => ({
     sourcemap: mode === 'development',
     rollupOptions: {
       output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': ['@radix-ui/react-*']
-          // 'firebase': ['firebase'] // Removed to let Vite handle Firebase chunking
+        manualChunks(id) {
+          if (id.includes('node_modules/@radix-ui/react-')) {
+            return 'ui-vendor';
+          }
+          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router-dom')) {
+            return 'react-vendor';
+          }
+          // Removed 'firebase' manual chunk to let Vite handle it
         }
       }
     }
