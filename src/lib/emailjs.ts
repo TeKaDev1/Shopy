@@ -51,15 +51,18 @@ export const sendOrderConfirmationEmail = async (orderData: OrderEmailData): Pro
       order_date: new Date().toLocaleDateString('ar-LY'),
       order_status: 'قيد الانتظار',
       customer_service_phone: '0922078595',
-      to_email: 'itzhapy@gmail.com' // إضافة عنوان البريد الإلكتروني للمستلم
+      to_email: 'itzhapy@gmail.com'
     };
     
     console.log('Sending email with template params:', templateParams);
+    console.log('Using service ID: service_orn_1i7o');
+    console.log('Using template ID: template_f5rh7n9');
+    console.log('Using public key: B6EzNeSIjQOTyWOLO');
     
     // Send email using the correct service ID and template ID
     const response = await emailjs.send(
-      'service_orn_1i7o',
-      'template_se2cken',
+      'itzhapy@gmail.com',
+      'template_f5rh7n9',
       templateParams,
       'B6EzNeSIjQOTyWOLO'
     );
@@ -88,7 +91,7 @@ export const sendNewsletterSubscription = async (data: NewsletterSubscriptionDat
     };
     
     await emailjs.send(
-      'service_orn_1i7o',
+      'itzhapy@gmail.com',
       'template_newsletter',
       templateParams,
       'B6EzNeSIjQOTyWOLO'
@@ -127,7 +130,7 @@ export const sendContactFormEmail = async (data: {
     };
     
     await emailjs.send(
-      'service_orn_1i7o',
+      'itzhapy@gmail.com',
       'template_contact',
       templateParams,
       'B6EzNeSIjQOTyWOLO'
