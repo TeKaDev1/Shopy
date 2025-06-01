@@ -4,19 +4,28 @@ import emailjs from '@emailjs/browser';
 emailjs.init('B6EzNeSIjQOTyWOLO');
 
 interface OrderEmailData {
-  id: string;
-  name: string;
-  phoneNumber: string;
-  address: string;
-  items: {
+  shop_name: string;
+  shop_url: string;
+  support_email: string;
+  current_year: string;
+  order_id: string; // Renamed from id for clarity in template
+  customer_email: string; // Added for sending email to customer
+  customer_name: string; // Renamed from name
+  phone_number: string; // Renamed from phoneNumber
+  delivery_address: string; // Renamed from address
+  items_html: string; // Pre-formatted HTML for items
+  subtotal_amount: string;
+  delivery_fee: string;
+  order_total: string; // Renamed from total
+  currency: string;
+  dashboard_link: string;
+  items?: { // Made items optional as items_html is primary for template
     id: string;
     name: string;
     price: number;
     quantity: number;
     image: string;
   }[];
-  total: number;
-  deliveryCost?: number;
   notes?: string;
 }
 
@@ -30,47 +39,56 @@ interface NewsletterSubscriptionData {
  */
 export const sendOrderConfirmationEmail = async (orderData: OrderEmailData): Promise<void> => {
   try {
-    // Format items for email in a more readable HTML format
-    const itemsHtml = orderData.items.map(item => 
-      `<tr>
-        <td style="padding: 10px; border-bottom: 1px solid #eee;">
-          <img src="${item.image}" alt="${item.name}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
-        </td>
-        <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.name}</td>
-        <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.quantity}</td>
-        <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.price.toFixed(2)} د.ل</td>
-        <td style="padding: 10px; border-bottom: 1px solid #eee;">${(item.price * item.quantity).toFixed(2)} د.ل</td>
-      </tr>`
-    ).join('');
+    // items_html is now pre-formatted and passed in orderData
     
-    // Prepare template parameters with enhanced formatting
+    // Prepare template parameters using the new OrderEmailData structure
     const templateParams = {
-      order_id: orderData.id,
-      customer_name: orderData.name,
-      customer_phone: orderData.phoneNumber,
-      customer_address: orderData.address,
-      order_items_html: itemsHtml,
-      order_items_text: orderData.items.map(item => 
-        `${item.name} (${item.quantity}x) - ${item.price} د.ل`
-      ).join('\n'),
-      order_subtotal: orderData.total.toFixed(2),
-      order_delivery_cost: orderData.deliveryCost ? orderData.deliveryCost.toFixed(2) : '0.00',
-      order_total: orderData.deliveryCost 
-        ? (orderData.total + orderData.deliveryCost).toFixed(2) 
-        : orderData.total.toFixed(2),
-      order_date: new Date().toLocaleDateString('ar-LY'),
-      order_time: new Date().toLocaleTimeString('ar-LY'),
-      customer_notes: orderData.notes || 'لا توجد ملاحظات',
-      items_count: orderData.items.reduce((sum, item) => sum + item.quantity, 0),
-      email_subject: `طلب جديد #${orderData.id} - ${orderData.name}`,
-      email_preview: `طلب جديد من ${orderData.name} بقيمة ${orderData.total.toFixed(2)} د.ل`
+      shop_name: orderData.shop_name,
+      shop_url: orderData.shop_url,
+      support_email: orderData.support_email,
+      current_year: orderData.current_year,
+      order_id: orderData.order_id,
+      customer_name: orderData.customer_name,
+      phone_number: orderData.phone_number,
+      delivery_address: orderData.delivery_address,
+      items_html: orderData.items_html, // Use the pre-formatted HTML
+      subtotal_amount: orderData.subtotal_amount,
+      delivery_fee: orderData.delivery_fee,
+      order_total: orderData.order_total,
+      currency: orderData.currency,
+      dashboard_link: orderData.dashboard_link,
+      // --- Parameters specifically for the customer email template ---
+      // The following are likely already covered by the direct mappings above
+      // but ensure your EmailJS template 'template_se2cken' uses these variable names.
+      // Example: {{customer_name}}, {{order_id}}, {{{items_html}}}, etc.
+
+      // This parameter is crucial for EmailJS to know where to send the email
+      // if your template's "To Email" field is set to a template variable like {{to_email}}
+      to_email: orderData.customer_email,
+
+
+      // --- Parameters that might still be useful for an admin notification (if you have one) ---
+      // If 'template_f5rh7n9' was the admin template, you might send a different set of params to it.
+      // For now, we are focusing on the customer email with 'template_se2cken'.
+      // The following are illustrative if you were to also send an admin email.
+      // admin_email_subject: `طلب جديد #${orderData.order_id} - ${orderData.customer_name}`,
+      // admin_email_preview: `طلب جديد من ${orderData.customer_name} بقيمة ${orderData.currency} ${orderData.order_total}`,
+      // admin_customer_phone: orderData.phone_number,
+      // admin_customer_address: orderData.delivery_address,
+      // admin_order_items_text: orderData.items.map(item =>
+      //   `${item.name} (${item.quantity}x) - ${orderData.currency} ${item.price.toFixed(2)}`
+      // ).join('\n'),
+      // admin_order_date: new Date().toLocaleDateString('ar-LY'),
+      // admin_order_time: new Date().toLocaleTimeString('ar-LY'),
+      // admin_customer_notes: orderData.notes || 'لا توجد ملاحظات',
+      // admin_items_count: orderData.items.reduce((sum, item) => sum + item.quantity, 0),
     };
     
-    // Send email using EmailJS
+    // Send email to CUSTOMER using the new template ID
     await emailjs.send(
-      'itzhapy@gmail.com', // Service ID
-      'template_f5rh7n9', // Template ID
-      templateParams
+      'itzhapy@gmail.com',    // Your EmailJS Service ID
+      'template_se2cken',   // Customer Order Confirmation Template ID
+      templateParams        // Parameters for the customer email
     );
     
     console.log('Order confirmation email sent successfully');

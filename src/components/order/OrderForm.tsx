@@ -35,6 +35,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
     const savedData = localStorage.getItem('customerData');
     return savedData ? JSON.parse(savedData) : {
       name: '',
+      email: '', // Added email field
       phoneNumber: '',
       city: '',
       address: '',
@@ -219,6 +220,11 @@ const OrderForm: React.FC<OrderFormProps> = ({
       toast.error('يرجى إدخال العنوان');
       return;
     }
+
+    if (!formData.email.trim() || !/\S+@\S+\.\S+/.test(formData.email)) {
+      toast.error('يرجى إدخال بريد إلكتروني صحيح');
+      return;
+    }
     
     setLoading(true);
     try {
@@ -271,14 +277,35 @@ const OrderForm: React.FC<OrderFormProps> = ({
       // Save order to Firebase
       const newOrderRef = await push(ordersRef, orderData);
       
-      // Send confirmation email
+      // Prepare items_html for the email
+      const itemsHtml = orderItems.map(item => `
+        <div style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #eeeeee; display: flex; align-items: center;">
+          <img src="${item.image}" alt="${item.name}" style="width: 65px; height: 65px; object-fit: cover; margin-right: 15px; border-radius: 6px; border: 1px solid #ddd;">
+          <div style="flex-grow: 1;">
+            <p style="margin: 0; font-weight: bold; font-size: 15px; color: #333;">${item.name}</p>
+            <p style="margin: 2px 0; font-size: 13px; color: #555555;">الكمية: ${item.quantity}</p>
+            <p style="margin: 2px 0; font-size: 13px; color: #555555; direction: ltr;">LYD ${(item.price * item.quantity).toFixed(2)}</p>
+          </div>
+        </div>
+      `).join('');
+
+      // Send confirmation email with more detailed data
       await sendOrderConfirmationEmail({
-        id: generatedOrderId,
-        name: formData.name,
-        phoneNumber: formData.phoneNumber,
-        address: `${formData.city}, ${formData.address}`,
-        items: orderItems,
-        total: total
+        shop_name: "متجر أناقة", // Replace with your actual shop name or pass dynamically
+        shop_url: window.location.origin,
+        support_email: "support@dkhil.com", // Replace with your support email
+        current_year: new Date().getFullYear().toString(),
+        order_id: generatedOrderId,
+        customer_email: formData.email, // Added customer email
+        customer_name: formData.name,
+        phone_number: formData.phoneNumber,
+        delivery_address: `${formData.city}, ${formData.address}`,
+        items_html: itemsHtml,
+        subtotal_amount: subtotal.toFixed(2),
+        delivery_fee: deliveryPrice.toFixed(2),
+        order_total: total.toFixed(2),
+        currency: "LYD",
+        dashboard_link: `${window.location.origin}/client-dashboard/${newOrderRef.key}` // Use the actual Firebase key for the link
       });
       
       // Set order ID for success message
@@ -506,7 +533,23 @@ const OrderForm: React.FC<OrderFormProps> = ({
                   required
                 />
               </div>
-              
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium mb-1.5">
+                  البريد الإلكتروني <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder="example@email.com"
+                  className="w-full px-4 py-2.5 rounded-md border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="phoneNumber" className="block text-sm font-medium mb-1.5">
                   رقم الهاتف <span className="text-red-500">*</span>
