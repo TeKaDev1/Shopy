@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { ShoppingBag, Truck, X, Plus, Search, ArrowRight, Minus } from 'lucide-react';
 import products from '@/data/products';
 import { Link } from 'react-router-dom';
+import emailjs from '@emailjs/browser';
 
 interface OrderFormProps {
   onClose: () => void;
@@ -285,8 +286,10 @@ const OrderForm: React.FC<OrderFormProps> = ({
         date: new Date().toISOString()
       };
       
+      console.log("Attempting to save orderData to Firebase:", JSON.stringify(orderData, null, 2)); // Log the exact data
       // Save order to Firebase
       const newOrderRef = await push(ordersRef, orderData);
+      console.log("Order pushed to Firebase successfully, ref key:", newOrderRef.key);
       
       // Prepare items_html for the email
       const itemsHtml = orderItems.map(item => `
@@ -329,6 +332,34 @@ const OrderForm: React.FC<OrderFormProps> = ({
       console.error('خطأ في إرسال الطلب:', error);
       toast.error('حدث خطأ أثناء إرسال الطلب');
       setLoading(false);
+    }
+  };
+  
+  const sendConfirmationEmail = async (orderData: any) => {
+    try {
+      const templateParams = {
+        to_email: orderData.email,
+        to_name: orderData.name,
+        order_id: orderData.id,
+        order_date: new Date().toLocaleDateString('ar-LY'),
+        order_items: orderData.items.map((item: any) => 
+          `${item.name} - ${item.quantity} × ${item.price.toFixed(2)} د.ل`
+        ).join('\n'),
+        order_total: orderData.total.toFixed(2),
+        order_status: 'قيد الانتظار',
+        delivery_address: `${orderData.city}، ${orderData.address}`,
+        customer_phone: orderData.phoneNumber,
+        customer_service_phone: '0922078595'
+      };
+
+      await emailjs.send(
+        'service_orn_1i7o',
+        'template_orn_1i7o',
+        templateParams,
+        'orn_1i7o'
+      );
+    } catch (error) {
+      console.error('Error sending confirmation email:', error);
     }
   };
   

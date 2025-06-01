@@ -80,45 +80,57 @@ const ClientDashboard = () => {
     const db = getDatabase(firebaseApp);
     
     try {
-      // Get the specific order by key
-      const orderRef = ref(db, `orders/${orderKey}`);
+      // Get the phone number from localStorage
+      const phoneNumber = localStorage.getItem('clientPhoneNumber');
       
-      onValue(orderRef, (snapshot) => {
+      if (!phoneNumber) {
+        toast.error('لم يتم العثور على معلومات المستخدم');
+        navigate('/login');
+        return;
+      }
+      
+      // Query all orders for this phone number
+      const ordersRef = ref(db, 'orders');
+      const phoneQuery = query(ordersRef, orderByChild('phoneNumber'), equalTo(phoneNumber));
+      
+      onValue(phoneQuery, (snapshot) => {
         if (snapshot.exists()) {
-          const orderData = snapshot.val();
+          const ordersList: Order[] = [];
           
-          // Store the phone number for future use
-          if (orderData.phoneNumber) {
-            localStorage.setItem('clientPhoneNumber', orderData.phoneNumber);
-          }
+          snapshot.forEach((childSnapshot) => {
+            const orderData = childSnapshot.val();
+            ordersList.push({
+              id: childSnapshot.key || '',
+              ...orderData
+            });
+          });
           
-          // Create an order object
-          const order = {
-            id: orderKey,
-            ...orderData
-          };
+          // Sort orders by date (newest first)
+          ordersList.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
           
-          // Set the orders array with just this order
-          setOrders([order]);
-          setSelectedOrder(order);
-          findRelatedProducts(order);
+          setOrders(ordersList);
+          
+          // If we have an orderId, select that order, otherwise select the most recent one
+          const selectedOrder = ordersList.find(o => o.id === orderKey) || ordersList[0];
+          setSelectedOrder(selectedOrder);
+          findRelatedProducts(selectedOrder);
+          
           setLoading(false);
         } else {
-          // Order not found
-          toast.error('لم يتم العثور على الطلب');
+          toast.error('لم يتم العثور على الطلبات');
           localStorage.removeItem('clientOrderKey');
           localStorage.removeItem('clientPhoneNumber');
           navigate('/login');
           setLoading(false);
         }
       }, (error) => {
-        console.error("Error loading order:", error);
-        toast.error('حدث خطأ أثناء تحميل الطلب');
+        console.error("Error loading orders:", error);
+        toast.error('حدث خطأ أثناء تحميل الطلبات');
         setLoading(false);
       });
     } catch (error) {
       console.error("Error in query setup:", error);
-      toast.error('حدث خطأ أثناء تحميل الطلب');
+      toast.error('حدث خطأ أثناء تحميل الطلبات');
       setLoading(false);
     }
   };
