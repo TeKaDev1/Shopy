@@ -88,12 +88,23 @@ const AdminDashboard = () => {
       if (!user) {
         navigate('/login');
       } else {
-        console.log('AdminDashboard Auth State:', user);
+        console.log('AdminDashboard Auth State (Original):', user);
         if (user) {
-          console.log('Admin User UID:', user.uid);
+          console.log('Admin User UID (Original):', user.uid);
+          // Attempt to get a fresh ID token to ensure auth state is current
+          user.getIdToken(true).then((idToken) => {
+            console.log('Admin User ID Token refreshed. Proceeding to load data.');
+            // console.log('ID Token:', idToken); // Optional: for debugging, but can be long
+            loadData();
+          }).catch((error) => {
+            console.error('Error refreshing admin ID token:', error);
+            toast.error('حدث خطأ في تحديث مصادقة المسؤول. حاول تحديث الصفحة.');
+            setLoading(false); // Stop loading if token refresh fails
+          });
+        } else {
+          // Should not happen if user object exists, but as a fallback:
+          loadData(); // Or handle as unauthenticated
         }
-        // Load data from Firebase
-        loadData();
       }
     });
     
