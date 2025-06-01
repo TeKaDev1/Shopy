@@ -88,6 +88,10 @@ const AdminDashboard = () => {
       if (!user) {
         navigate('/login');
       } else {
+        console.log('AdminDashboard Auth State:', user);
+        if (user) {
+          console.log('Admin User UID:', user.uid);
+        }
         // Load data from Firebase
         loadData();
       }
@@ -144,9 +148,11 @@ const AdminDashboard = () => {
         });
       }
       setLoading(false);
-    }, (error) => {
+    }, (error: any) => {
       console.error("Firebase onValue error fetching orders for admin:", error);
-      toast.error("حدث خطأ أثناء تحميل الطلبات.");
+      console.error("Error code:", error.code);
+      console.error("Error message:", error.message);
+      toast.error("حدث خطأ أثناء تحميل الطلبات. راجع الكونسول لمزيد من التفاصيل.");
       setOrders([]);
       setStats({
         totalOrders: 0,

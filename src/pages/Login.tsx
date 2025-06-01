@@ -185,9 +185,11 @@ const Login = () => {
       } else {
         toast.error('لم يتم العثور على طلبات مرتبطة برقم الهاتف هذا');
       }
-    } catch (error) {
-      console.error('خطأ في تسجيل الدخول:', error);
-      toast.error('حدث خطأ أثناء تسجيل الدخول');
+    } catch (error: any) {
+      console.error('خطأ في تسجيل الدخول (Client):', error);
+      console.error("Error code:", error.code);
+      console.error("Error message:", error.message);
+      toast.error('حدث خطأ أثناء تسجيل الدخول. راجع الكونسول.');
     } finally {
       setLoading(false);
     }

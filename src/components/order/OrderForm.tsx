@@ -35,7 +35,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
     const savedData = localStorage.getItem('customerData');
     return savedData ? JSON.parse(savedData) : {
       name: '',
-      email: '', // Added email field
+      // email: '', // Removed email field
       phoneNumber: '',
       city: '',
       address: '',
@@ -105,9 +105,25 @@ const OrderForm: React.FC<OrderFormProps> = ({
           citiesList.sort((a, b) => a.name.localeCompare(b.name));
           
           setCities(citiesList);
+          // If cities are loaded and formData.city is not set, or not in the list, set a default
+          if (citiesList.length > 0) {
+            const currentCityInForm = citiesList.find(c => c.name === formData.city);
+            if (!formData.city || !currentCityInForm) {
+              setFormData(prev => ({ ...prev, city: citiesList[0].name }));
+              setDeliveryPrice(citiesList[0].price);
+            } else if (currentCityInForm) {
+              // Ensure delivery price is set if city is already in form
+              setDeliveryPrice(currentCityInForm.price);
+            }
+          }
+
+        } else {
+          setCities([]); // Ensure cities is empty if snapshot doesn't exist
         }
       } catch (error) {
         console.error('خطأ في تحميل المدن:', error);
+        toast.error('حدث خطأ أثناء تحميل قائمة المدن.');
+        setCities([]); // Clear cities on error
       } finally {
         setLoadingCities(false);
       }
@@ -220,11 +236,6 @@ const OrderForm: React.FC<OrderFormProps> = ({
       toast.error('يرجى إدخال العنوان');
       return;
     }
-
-    if (!formData.email.trim() || !/\S+@\S+\.\S+/.test(formData.email)) {
-      toast.error('يرجى إدخال بريد إلكتروني صحيح');
-      return;
-    }
     
     setLoading(true);
     try {
@@ -296,7 +307,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
         support_email: "support@dkhil.com", // Replace with your support email
         current_year: new Date().getFullYear().toString(),
         order_id: generatedOrderId,
-        customer_email: formData.email, // Added customer email
+        // customer_email: formData.email, // Removed customer email
         customer_name: formData.name,
         phone_number: formData.phoneNumber,
         delivery_address: `${formData.city}, ${formData.address}`,
@@ -533,23 +544,9 @@ const OrderForm: React.FC<OrderFormProps> = ({
                   required
                 />
               </div>
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium mb-1.5">
-                  البريد الإلكتروني <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder="example@email.com"
-                  className="w-full px-4 py-2.5 rounded-md border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  required
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Email field removed from here */}
+            {/* </div> */}
+            {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> */}
               <div>
                 <label htmlFor="phoneNumber" className="block text-sm font-medium mb-1.5">
                   رقم الهاتف <span className="text-red-500">*</span>

@@ -8,11 +8,11 @@ interface OrderEmailData {
   shop_url: string;
   support_email: string;
   current_year: string;
-  order_id: string; // Renamed from id for clarity in template
-  customer_email: string; // Added for sending email to customer
-  customer_name: string; // Renamed from name
-  phone_number: string; // Renamed from phoneNumber
-  delivery_address: string; // Renamed from address
+  order_id: string;
+  customer_email?: string; // Made optional, as it's for admin info, not recipient
+  customer_name: string;
+  phone_number: string;
+  delivery_address: string;
   items_html: string; // Pre-formatted HTML for items
   subtotal_amount: string;
   delivery_fee: string;
@@ -84,11 +84,11 @@ export const sendOrderConfirmationEmail = async (orderData: OrderEmailData): Pro
       // admin_items_count: orderData.items.reduce((sum, item) => sum + item.quantity, 0),
     };
     
-    // Send email to CUSTOMER using the new template ID
+    // Send email to ADMIN using the admin alert template ID
     await emailjs.send(
       'itzhapy@gmail.com',    // Your EmailJS Service ID
-      'template_se2cken',   // Customer Order Confirmation Template ID
-      templateParams        // Parameters for the customer email
+      'template_f5rh7n9',   // Admin Order Alert Template ID (reverted from template_se2cken)
+      templateParams        // Parameters for the admin email
     );
     
     console.log('Order confirmation email sent successfully');
