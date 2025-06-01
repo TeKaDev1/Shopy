@@ -4,9 +4,9 @@ import { getDatabase } from 'firebase/database';
 import { getStorage } from 'firebase/storage';
 
 
-  // your Firebase configuration
+
 const firebaseConfig = {
-  apiKey: "AIzaSyAwvH0kCjpr5H2Wlqwpva0PC0vjxeIM46o",
+   apiKey: "AIzaSyAwvH0kCjpr5H2Wlqwpva0PC0vjxeIM46o",
   authDomain: "tekadev1.firebaseapp.com",
   databaseURL: "https://tekadev1-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "tekadev1",
@@ -21,4 +21,4 @@ const auth = getAuth(app);
 const database = getDatabase(app);
 const storage = getStorage(app);
 
-export { app, auth, database, storage };
+export { app as firebaseApp, auth, database, storage };
