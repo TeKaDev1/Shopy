@@ -55,8 +55,8 @@ export const sendOrderConfirmationEmail = async (orderData: OrderEmailData): Pro
     };
     
     console.log('Sending email with template params:', templateParams);
-    console.log('Using service ID: service_orn_1i7o');
-    console.log('Using template ID: template_f5rh7n9');
+    console.log('Using service ID: itzhapy@gmail.com');
+    console.log('Using template ID: template_se2cken');
     console.log('Using public key: B6EzNeSIjQOTyWOLO');
     
     // Send email using the correct service ID and template ID
