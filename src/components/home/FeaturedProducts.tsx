@@ -5,6 +5,7 @@ import { Product } from '@/data/products'; // Import only the type
 import { ArrowRight, Loader2 } from 'lucide-react';
 import { getDatabase, ref, onValue } from 'firebase/database';
 import { firebaseApp } from '@/lib/firebase';
+import { toast } from 'sonner';
 
 const FeaturedProducts = () => {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
@@ -43,6 +44,11 @@ const FeaturedProducts = () => {
       }
       
       setLoading(false);
+    }, (error) => {
+      console.error("Firebase onValue error fetching featured products:", error);
+      toast.error("حدث خطأ أثناء تحميل المنتجات المميزة.");
+      setFeaturedProducts([]); // Clear products on error
+      setLoading(false); // Ensure loading is set to false even on error
     });
     
     return () => unsubscribe();
