@@ -31,6 +31,8 @@ interface NewsletterSubscriptionData {
  */
 export const sendOrderConfirmationEmail = async (orderData: OrderEmailData): Promise<void> => {
   try {
+    console.log('Preparing to send order confirmation email with data:', orderData);
+    
     const templateParams = {
       shop_name: orderData.shop_name,
       shop_url: orderData.shop_url,
@@ -48,18 +50,21 @@ export const sendOrderConfirmationEmail = async (orderData: OrderEmailData): Pro
       dashboard_link: orderData.dashboard_link,
       order_date: new Date().toLocaleDateString('ar-LY'),
       order_status: 'قيد الانتظار',
-      customer_service_phone: '0922078595'
+      customer_service_phone: '0922078595',
+      to_email: 'itzhapy@gmail.com' // إضافة عنوان البريد الإلكتروني للمستلم
     };
     
+    console.log('Sending email with template params:', templateParams);
+    
     // Send email using the correct service ID and template ID
-    await emailjs.send(
+    const response = await emailjs.send(
       'service_orn_1i7o',
-      'template_orn_1i7o',
+      'template_se2cken',
       templateParams,
-      'orn_1i7o'
+      'B6EzNeSIjQOTyWOLO'
     );
     
-    console.log('Order confirmation email sent successfully');
+    console.log('Email sent successfully:', response);
   } catch (error) {
     console.error('Error sending order confirmation email:', error);
     throw error;
@@ -86,7 +91,7 @@ export const sendNewsletterSubscription = async (data: NewsletterSubscriptionDat
       'service_orn_1i7o',
       'template_newsletter',
       templateParams,
-      'orn_1i7o'
+      'B6EzNeSIjQOTyWOLO'
     );
     
     console.log('Newsletter subscription email sent successfully');
@@ -117,14 +122,15 @@ export const sendContactFormEmail = async (data: {
       submission_time: new Date().toLocaleTimeString('ar-LY'),
       email_subject: `رسالة جديدة: ${data.subject}`,
       email_preview: `رسالة جديدة من ${data.name} بخصوص ${data.subject}`,
-      response_message: `مرحباً ${data.name}،\n\nشكراً لتواصلك معنا. لقد استلمنا رسالتك وسيقوم فريقنا بالرد عليك في أقرب وقت ممكن.\n\nتفاصيل رسالتك:\nالموضوع: ${data.subject}\nالرسالة: ${data.message}\n\nمع تحيات،\nفريق دخيل`
+      response_message: `مرحباً ${data.name}،\n\nشكراً لتواصلك معنا. لقد استلمنا رسالتك وسيقوم فريقنا بالرد عليك في أقرب وقت ممكن.\n\nتفاصيل رسالتك:\nالموضوع: ${data.subject}\nالرسالة: ${data.message}\n\nمع تحيات،\nفريق دخيل`,
+      to_email: 'itzhapy@gmail.com'
     };
     
     await emailjs.send(
       'service_orn_1i7o',
       'template_contact',
       templateParams,
-      'orn_1i7o'
+      'B6EzNeSIjQOTyWOLO'
     );
     
     console.log('Contact form email sent successfully');
