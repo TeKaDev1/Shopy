@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
-import { getDatabase, ref, onValue } from 'firebase/database';
+import { getDatabase, ref, onValue, get } from 'firebase/database'; // Added get
 import { firebaseApp } from '@/lib/firebase';
 import { Package, ShoppingBag, Users, LogOut, Plus, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
@@ -65,11 +65,10 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'categories' | 'cities' | 'newsletter'>('orders');
   const [orders, setOrders] = useState<Order[]>([]);
   const [cities, setCities] = useState<CityDelivery[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>([]); // For FB Ads section
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   
-  // Stats
   const [stats, setStats] = useState({
     totalOrders: 0,
     pendingOrders: 0,
@@ -82,179 +81,209 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     const auth = getAuth(firebaseApp);
+    let unsubscribeOrdersFunc: (() => void) | null = null;
+    let unsubscribeCitiesFunc: (() => void) | null = null;
+    let unsubscribeProductsFunc: (() => void) | null = null;
+
+    const setupFirebaseListeners = () => {
+      setLoading(true);
+      const db = getDatabase(firebaseApp);
+
+      // Load orders
+      const ordersRef = ref(db, 'orders');
+      unsubscribeOrdersFunc = onValue(ordersRef, (snapshot) => {
+        const data = snapshot.val();
+        const ordersListLocal: Order[] = [];
+        if (data) {
+          Object.keys(data).forEach((key) => {
+            ordersListLocal.push({ ...data[key], key });
+          });
+          ordersListLocal.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+          setOrders(ordersListLocal);
+          const statsData = {
+            totalOrders: ordersListLocal.length,
+            pendingOrders: ordersListLocal.filter(order => order.status === 'pending').length,
+            processingOrders: ordersListLocal.filter(order => order.status === 'processing').length,
+            shippedOrders: ordersListLocal.filter(order => order.status === 'shipped').length,
+            deliveredOrders: ordersListLocal.filter(order => order.status === 'delivered').length,
+            cancelledOrders: ordersListLocal.filter(order => order.status === 'cancelled').length,
+            totalRevenue: ordersListLocal.reduce((total, order) => total + order.total, 0)
+          };
+          setStats(statsData);
+        } else {
+          setOrders([]);
+          setStats({ totalOrders: 0, pendingOrders: 0, processingOrders: 0, shippedOrders: 0, deliveredOrders: 0, cancelledOrders: 0, totalRevenue: 0 });
+        }
+        setLoading(false);
+      }, (error: any) => {
+        console.error("Firebase onValue error fetching orders for admin:", error);
+        console.error("Error code:", error.code);
+        console.error("Error message:", error.message);
+        toast.error("حدث خطأ أثناء تحميل الطلبات. راجع الكونسول لمزيد من التفاصيل.");
+        setOrders([]);
+        setStats({ totalOrders: 0, pendingOrders: 0, processingOrders: 0, shippedOrders: 0, deliveredOrders: 0, cancelledOrders: 0, totalRevenue: 0 });
+        setLoading(false);
+      });
+
+      // Load cities
+      const citiesRef = ref(db, 'cities');
+      unsubscribeCitiesFunc = onValue(citiesRef, (snapshot) => {
+        const data = snapshot.val();
+        const citiesListLocal: CityDelivery[] = [];
+        if (data) {
+          Object.keys(data).forEach((key) => {
+            citiesListLocal.push({ ...data[key], id: key });
+          });
+          citiesListLocal.sort((a, b) => a.name.localeCompare(b.name));
+          setCities(citiesListLocal);
+        } else {
+          setCities([]);
+        }
+      }, (error) => {
+        console.error("Firebase onValue error fetching cities for admin:", error);
+        toast.error("حدث خطأ أثناء تحميل بيانات المدن.");
+        setCities([]);
+      });
+
+      // Load products (for Facebook Ads section)
+      const productsRef = ref(db, 'products');
+      unsubscribeProductsFunc = onValue(productsRef, (snapshot) => {
+        const data = snapshot.val();
+        const productsListLocal: Product[] = [];
+        if (data) {
+          Object.keys(data).forEach((key) => {
+            const product = data[key];
+            if (!product.images || !Array.isArray(product.images)) {
+              product.images = [];
+            }
+            productsListLocal.push({ ...product, id: key });
+          });
+          productsListLocal.sort((a, b) => a.name.localeCompare(b.name));
+          setProducts(productsListLocal);
+        } else {
+          setProducts([]);
+        }
+      }, (error) => {
+        console.error("Firebase onValue error fetching products for admin dashboard (FB Ads):", error);
+        setProducts([]);
+      });
+    };
     
-    // Check if user is authenticated
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (!user) {
+        if (unsubscribeOrdersFunc) unsubscribeOrdersFunc();
+        if (unsubscribeCitiesFunc) unsubscribeCitiesFunc();
+        if (unsubscribeProductsFunc) unsubscribeProductsFunc();
+        setOrders([]); 
+        setCities([]);
+        setProducts([]);
+        setStats({ totalOrders: 0, pendingOrders: 0, processingOrders: 0, shippedOrders: 0, deliveredOrders: 0, cancelledOrders: 0, totalRevenue: 0 });
+        setLoading(true); 
         navigate('/login');
       } else {
         console.log('AdminDashboard Auth State (Original):', user);
-        if (user) {
-          console.log('Admin User UID (Original):', user.uid);
-          // Attempt to get a fresh ID token to ensure auth state is current
-          user.getIdToken(true).then((idToken) => {
-            console.log('Admin User ID Token refreshed. Proceeding to load data.');
-            // console.log('ID Token:', idToken); // Optional: for debugging, but can be long
-            loadData();
-          }).catch((error) => {
-            console.error('Error refreshing admin ID token:', error);
-            toast.error('حدث خطأ في تحديث مصادقة المسؤول. حاول تحديث الصفحة.');
-            setLoading(false); // Stop loading if token refresh fails
-          });
-        } else {
-          // Should not happen if user object exists, but as a fallback:
-          loadData(); // Or handle as unauthenticated
-        }
+        console.log('Admin User UID (Original):', user.uid);
+        user.getIdToken(true).then(() => {
+          console.log('Admin User ID Token refreshed. Proceeding to set up listeners.');
+          setupFirebaseListeners();
+        }).catch((error) => {
+          console.error('Error refreshing admin ID token:', error);
+          toast.error('حدث خطأ في تحديث مصادقة المسؤول. حاول تحديث الصفحة.');
+          setLoading(false);
+        });
       }
     });
     
-    return () => unsubscribe();
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeOrdersFunc) unsubscribeOrdersFunc();
+      if (unsubscribeCitiesFunc) unsubscribeCitiesFunc();
+      if (unsubscribeProductsFunc) unsubscribeProductsFunc();
+    };
   }, [navigate]);
-  
-  const loadData = () => {
-    setLoading(true);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    setLoading(true); 
     const db = getDatabase(firebaseApp);
-    
-    // Load orders
-    const ordersRef = ref(db, 'orders');
-    onValue(ordersRef, (snapshot) => {
+
+    const fetchOrders = get(ref(db, 'orders')).then(snapshot => {
       const data = snapshot.val();
-      const ordersList: Order[] = [];
-      
+      const ordersListLocal: Order[] = [];
       if (data) {
-        Object.keys(data).forEach((key) => {
-          ordersList.push({
-            ...data[key],
-            key
-          });
-        });
-        
-        // Sort orders by date (newest first)
-        ordersList.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-        
-        setOrders(ordersList);
-        
-        // Calculate stats
+        Object.keys(data).forEach((key) => { ordersListLocal.push({ ...data[key], key }); });
+        ordersListLocal.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        setOrders(ordersListLocal);
         const statsData = {
-          totalOrders: ordersList.length,
-          pendingOrders: ordersList.filter(order => order.status === 'pending').length,
-          processingOrders: ordersList.filter(order => order.status === 'processing').length,
-          shippedOrders: ordersList.filter(order => order.status === 'shipped').length,
-          deliveredOrders: ordersList.filter(order => order.status === 'delivered').length,
-          cancelledOrders: ordersList.filter(order => order.status === 'cancelled').length,
-          totalRevenue: ordersList.reduce((total, order) => total + order.total, 0)
+          totalOrders: ordersListLocal.length,
+          pendingOrders: ordersListLocal.filter(o => o.status === 'pending').length,
+          processingOrders: ordersListLocal.filter(o => o.status === 'processing').length,
+          shippedOrders: ordersListLocal.filter(o => o.status === 'shipped').length,
+          deliveredOrders: ordersListLocal.filter(o => o.status === 'delivered').length,
+          cancelledOrders: ordersListLocal.filter(o => o.status === 'cancelled').length,
+          totalRevenue: ordersListLocal.reduce((t, o) => t + o.total, 0)
         };
-        
         setStats(statsData);
       } else {
         setOrders([]);
-        setStats({ // Reset stats if no orders
-          totalOrders: 0,
-          pendingOrders: 0,
-          processingOrders: 0,
-          shippedOrders: 0,
-          deliveredOrders: 0,
-          cancelledOrders: 0,
-          totalRevenue: 0
-        });
+        setStats({ totalOrders: 0, pendingOrders: 0, processingOrders: 0, shippedOrders: 0, deliveredOrders: 0, cancelledOrders: 0, totalRevenue: 0 });
       }
-      setLoading(false);
-    }, (error: any) => {
-      console.error("Firebase onValue error fetching orders for admin:", error);
-      console.error("Error code:", error.code);
-      console.error("Error message:", error.message);
-      toast.error("حدث خطأ أثناء تحميل الطلبات. راجع الكونسول لمزيد من التفاصيل.");
-      setOrders([]);
-      setStats({
-        totalOrders: 0,
-        pendingOrders: 0,
-        processingOrders: 0,
-        shippedOrders: 0,
-        deliveredOrders: 0,
-        cancelledOrders: 0,
-        totalRevenue: 0
-      });
-      setLoading(false);
+    }).catch(error => {
+      console.error("Error refreshing orders:", error);
+      toast.error("خطأ عند تحديث الطلبات.");
     });
-    
-    // Load cities
-    const citiesRef = ref(db, 'cities');
-    onValue(citiesRef, (snapshot) => {
+
+    const fetchCities = get(ref(db, 'cities')).then(snapshot => {
       const data = snapshot.val();
-      const citiesList: CityDelivery[] = [];
-      
+      const citiesListLocal: CityDelivery[] = [];
       if (data) {
-        Object.keys(data).forEach((key) => {
-          citiesList.push({
-            ...data[key],
-            id: key
-          });
-        });
-        
-        // Sort cities alphabetically
-        citiesList.sort((a, b) => a.name.localeCompare(b.name));
-        
-        setCities(citiesList);
+        Object.keys(data).forEach((key) => { citiesListLocal.push({ ...data[key], id: key }); });
+        citiesListLocal.sort((a, b) => a.name.localeCompare(b.name));
+        setCities(citiesListLocal);
       } else {
         setCities([]);
       }
-    }, (error) => {
-      console.error("Firebase onValue error fetching cities for admin:", error);
-      toast.error("حدث خطأ أثناء تحميل بيانات المدن.");
-      setCities([]);
+    }).catch(error => {
+      console.error("Error refreshing cities:", error);
+      toast.error("خطأ عند تحديث المدن.");
     });
-    
-    // Load products
-    const productsRef = ref(db, 'products');
-    onValue(productsRef, (snapshot) => {
+
+    const fetchProductsForFB = get(ref(db, 'products')).then(snapshot => {
       const data = snapshot.val();
-      const productsList: Product[] = [];
-      
+      const productsListLocal: Product[] = [];
       if (data) {
         Object.keys(data).forEach((key) => {
           const product = data[key];
-          
-          // Ensure images is always an array
-          if (!product.images || !Array.isArray(product.images)) {
-            product.images = [];
-          }
-          
-          productsList.push({
-            ...product,
-            id: key
-          });
+          if (!product.images || !Array.isArray(product.images)) product.images = [];
+          productsListLocal.push({ ...product, id: key });
         });
-        
-        // Sort products by name
-        productsList.sort((a, b) => a.name.localeCompare(b.name));
-        
-        setProducts(productsList);
+        productsListLocal.sort((a, b) => a.name.localeCompare(b.name));
+        setProducts(productsListLocal);
       } else {
         setProducts([]);
       }
-    }, (error) => {
-      console.error("Firebase onValue error fetching products for admin dashboard:", error);
-      // No toast here as ProductManager handles its own loading/error display
-      setProducts([]);
+    }).catch(error => {
+      console.error("Error refreshing products (FB Ads):", error);
     });
-  };
-  
-  const handleRefresh = () => {
-    setRefreshing(true);
-    
-    // Simulate a refresh delay
-    setTimeout(() => {
-      loadData();
-      setRefreshing(false);
-      toast.success('تم تحديث البيانات بنجاح');
-    }, 500);
+
+    Promise.all([fetchOrders, fetchCities, fetchProductsForFB])
+      .then(() => {
+        toast.success('تم تحديث البيانات بنجاح');
+      })
+      .catch(() => {
+        // Individual errors already handled and toasted
+      })
+      .finally(() => {
+        setLoading(false);
+        setRefreshing(false);
+      });
   };
   
   const handleSignOut = async () => {
     try {
       const auth = getAuth(firebaseApp);
-      await signOut(auth);
-      navigate('/login');
+      await signOut(auth); 
+      // Navigation is handled by onAuthStateChanged
       toast.success('تم تسجيل الخروج بنجاح');
     } catch (error) {
       console.error('خطأ في تسجيل الخروج:', error);
@@ -272,9 +301,9 @@ const AdminDashboard = () => {
             <div className="flex items-center gap-3">
               <button 
                 onClick={handleRefresh}
-                disabled={refreshing}
+                disabled={refreshing || loading}
                 className={`flex items-center gap-2 bg-primary-foreground/10 hover:bg-primary-foreground/20 transition-colors rounded-md px-3 py-1.5 ${
-                  refreshing ? 'opacity-70 cursor-not-allowed' : ''
+                  (refreshing || loading) ? 'opacity-70 cursor-not-allowed' : ''
                 }`}
               >
                 <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
@@ -337,7 +366,7 @@ const AdminDashboard = () => {
                 </div>
                 <div>
                   <h3 className="text-foreground/60 text-sm">إجمالي الإيرادات</h3>
-                  <p className="text-2xl font-semibold">{stats.totalRevenue.toFixed(2)} د.ل</p>
+                  <p className="text-2xl font-semibold">LYD {stats.totalRevenue.toFixed(2)}</p>
                 </div>
               </div>
             </div>
@@ -401,13 +430,11 @@ const AdminDashboard = () => {
           
           {/* Tab Content */}
           <div className="mb-8">
-            {/* Orders Tab */}
             {activeTab === 'orders' && (
               <div>
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-xl font-semibold">إدارة الطلبات</h2>
                 </div>
-                
                 {loading ? (
                   <div className="text-center py-12">
                     <div className="inline-block w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
@@ -419,21 +446,16 @@ const AdminDashboard = () => {
               </div>
             )}
             
-            {/* Products Tab */}
             {activeTab === 'products' && (
               <div>
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-xl font-semibold">إدارة المنتجات</h2>
                 </div>
-                
                 <ProductManager />
-                
-                {/* Facebook Ads Section */}
                 <div className="mt-8">
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-semibold">إعلانات فيسبوك</h2>
                   </div>
-                  
                   <div className="bg-secondary rounded-xl overflow-hidden shadow-sm mb-6">
                     <div className="p-6 border-b border-border">
                       <div className="flex items-center gap-3">
@@ -448,7 +470,6 @@ const AdminDashboard = () => {
                         </div>
                       </div>
                     </div>
-                    
                     <div className="divide-y divide-border max-h-96 overflow-y-auto">
                       {products && products.length > 0 ? products.map((product) => (
                         <div key={product.id} className="p-4 flex items-center justify-between hover:bg-secondary/50">
@@ -459,7 +480,6 @@ const AdminDashboard = () => {
                                 alt={product && product.name ? product.name : 'منتج'}
                                 className="w-full h-full object-cover object-center"
                                 onError={(e) => {
-                                  // Fallback if image fails to load
                                   (e.target as HTMLImageElement).src = '/placeholder.svg';
                                 }}
                               />
@@ -487,29 +507,24 @@ const AdminDashboard = () => {
               </div>
             )}
             
-            {/* Categories Tab */}
             {activeTab === 'categories' && (
               <div>
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-xl font-semibold">إدارة الفئات</h2>
                 </div>
-                
                 <CategoryManager />
               </div>
             )}
             
-            {/* Cities Tab */}
             {activeTab === 'cities' && (
               <div>
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-xl font-semibold">إدارة المدن وأسعار التوصيل</h2>
                 </div>
-                
                 <CityDeliveryManager />
               </div>
             )}
 
-            {/* Newsletter Tab */}
             {activeTab === 'newsletter' && (
               <div>
                 <div className="flex justify-between items-center mb-6">
