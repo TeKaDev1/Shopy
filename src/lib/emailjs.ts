@@ -34,35 +34,30 @@ export const sendOrderConfirmationEmail = async (orderData: OrderEmailData): Pro
     console.log('Preparing to send order confirmation email with data:', orderData);
     
     const templateParams = {
-      shop_name: orderData.shop_name,
-      shop_url: orderData.shop_url,
-      support_email: orderData.support_email,
-      current_year: orderData.current_year,
-      order_id: orderData.order_id,
+      to_email: 'itzhapy@gmail.com',
+      subject: `طلب جديد #${orderData.order_id}`,
       customer_name: orderData.customer_name,
-      phone_number: orderData.phone_number,
-      delivery_address: orderData.delivery_address,
-      items_html: orderData.items_html,
-      subtotal_amount: orderData.subtotal_amount,
-      delivery_fee: orderData.delivery_fee,
-      order_total: orderData.order_total,
-      currency: orderData.currency,
-      dashboard_link: orderData.dashboard_link,
+      customer_phone: orderData.phone_number,
+      customer_address: orderData.delivery_address,
+      order_id: orderData.order_id,
       order_date: new Date().toLocaleDateString('ar-LY'),
-      order_status: 'قيد الانتظار',
-      customer_service_phone: '0922078595',
-      to_email: 'itzhapy@gmail.com'
+      order_time: new Date().toLocaleTimeString('ar-LY'),
+      order_items: orderData.items_html,
+      subtotal: `${orderData.subtotal_amount} ${orderData.currency}`,
+      delivery_fee: `${orderData.delivery_fee} ${orderData.currency}`,
+      total_amount: `${orderData.order_total} ${orderData.currency}`,
+      order_status: 'طلب جديد'
     };
     
-    console.log('Sending email with template params:', templateParams);
+    console.log('Sending admin notification email with order details:', templateParams);
     console.log('Using service ID: itzhapy@gmail.com');
-    console.log('Using template ID: template_se2cken');
+    console.log('Using template ID: template_f5rh7n9');
     console.log('Using public key: B6EzNeSIjQOTyWOLO');
     
-    // Send email using the correct service ID and template ID
+    // Send email to admin
     const response = await emailjs.send(
       'itzhapy@gmail.com',
-      'template_se2cken',
+      'template_f5rh7n9',
       templateParams,
       'B6EzNeSIjQOTyWOLO'
     );
